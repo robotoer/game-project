@@ -15,13 +15,15 @@
         android:text="@string/button2"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:onClick="button2Observer" />
     <Button
         android:id="@+id/button3"
         android:text="@string/button3"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:onClick="button3Observer" />
   </LinearLayout>
 
   <!-- Right Column -->
@@ -35,12 +37,14 @@
         android:text="@string/button1"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:onClick="button1Observer" />
     <Button
         android:id="@+id/button4"
         android:text="@string/button4"
         android:layout_width="fill_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:onClick="button4Observer" />
   </LinearLayout>
 </LinearLayout>
