@@ -1,4 +1,4 @@
-package com.gameproject
+package com.goldblastgames.simonsays
 
 import android.app.Activity
 import android.os.Bundle
@@ -13,24 +13,25 @@ import reactive.Observing
  *
  * Note: The Observing trait is required in all classes that use the [[EventSource#foreach]] method.
  */
-class MainActivity extends Activity with TypedActivity with Observing {
+class SimonSaysActivity extends Activity with TypedActivity with Observing {
   // Setup an EventSource (in an actual project a real subtype of EventSource should be used instead).
   val es: EventSource[String] = new EventSource[String] { }
 
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
-    setContentView(R.layout.main)
+    setContentView(R.layout.simonsays)
+//    setContentView(R.layout.main)
 
-    findView(TR.textview).setText("hello, world!")
-    es.foreach(msg => Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show())
+//    findView(TR.textview).setText("hello, world!")
+//    es.foreach(msg => Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_SHORT).show())
   }
 
-  /**
-   * Observer for button. This fires an event for the test event source.
-   *
-   * @param view The view that caused this event.
-   */
-  def buttonObserver(view: View) {
-    es fire "foo msg!"
-  }
+//  /**
+//   * Observer for button. This fires an event for the test event source.
+//   *
+//   * @param view The view that caused this event.
+//   */
+//  def buttonObserver(view: View) {
+//    es fire "foo msg!"
+//  }
 }

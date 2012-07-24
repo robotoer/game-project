@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">gameproject</string>
-    <string name="button_submit">This is a submitter</string>
+
+    <!-- Simon Says -->
+    <string name="simonsays">Simon Says</string>
+    <string name="button1">1</string>
+    <string name="button2">2</string>
+    <string name="button3">3</string>
+    <string name="button4">4</string>
 </resources>

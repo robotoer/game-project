@@ -5,7 +5,7 @@ import AndroidKeys._
 
 object General {
   val settings = Defaults.defaultSettings ++ Seq (
-    name := "gameproject",
+    name := "simonsays",
     version := "0.1",
     versionCode := 0,
     scalaVersion := "2.9.1",
@@ -30,7 +30,7 @@ object General {
 
 object AndroidBuild extends Build {
   lazy val main = Project (
-    "gameproject",
+    "simonsays",
     file("."),
     settings = General.fullAndroidSettings
   )
@@ -41,7 +41,7 @@ object AndroidBuild extends Build {
     settings = General.settings ++
                AndroidTest.androidSettings ++
                General.proguardSettings ++ Seq (
-      name := "gameprojectTests"
+      name := "simonsaysTests"
     )
   ) dependsOn main
 }
