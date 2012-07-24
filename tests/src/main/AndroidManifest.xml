@@ -1,6 +1,6 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.gameproject.tests">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.goldblastgames.simonsays.tests">
     <application>
-        <activity android:name=".MainActivity" android:label="@string/app_name">
+        <activity android:name=".SimonSaysActivity" android:label="@string/simonsays">
            <intent-filter>
                <action android:name="android.intent.action.MAIN"/>
                <category android:name="android.intent.category.LAUNCHER"/>
@@ -11,7 +11,7 @@
     </application>
 
     <instrumentation android:label="Tests"
-                     android:targetPackage="com.gameproject"
+                     android:targetPackage="com.goldblastgames.simonsays"
                      android:name="android.test.InstrumentationTestRunner"/>
 
     <uses-sdk android:minSdkVersion="10"/>

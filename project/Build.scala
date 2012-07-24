@@ -9,7 +9,9 @@ object General {
     version := "0.1",
     versionCode := 0,
     scalaVersion := "2.9.1",
-    platformName in Android := "android-10"
+    platformName in Android := "android-10",
+    resolvers += "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
+    libraryDependencies += "cc.co.scala-reactive" %% "reactive-core" % "0.2-SNAPSHOT"
   )
 
   val proguardSettings = Seq (
