@@ -35,9 +35,9 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
   val btn3Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 3).distinct
   val btn4Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 4).distinct
   val interactive: Var[Boolean] = Var(false)
-  val timer: Timer = new Timer(0L, 2000L)
+  var timer: Timer = new Timer(0L, 2000L)
   val timerOff: EventSource[Long] = new EventSource[Long]() { }
-  val displayUpdate: EventStream[Long] = interactive.flatMap {
+  val displayUpdate: EventStream[Long] = interactive.distinct.flatMap {
     case false => timer
     case true => timerOff
   }
@@ -53,7 +53,7 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
 
     // Bad design - this should actually be done via functional mapping,
     // not with an imperative foreach.
-    interactive.change.foreach {
+    interactive.distinct.change.foreach {
       case false => {
         setButtonStatus(false)
         displayIndex.update(0)
@@ -72,7 +72,7 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
         toast("Victory!")
         // Restart game
         score.value += 1
-        expected.value += score.value
+        expected.value += randomButton
         actual.update(Seq())
         interactive.update(false)
       }
@@ -128,6 +128,8 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
       }
     )
   }
+
+  def randomButton = Random.nextInt(4)
 
   def handle(fn: => Unit) {
     handler.post(new RunnableFn(fn))
