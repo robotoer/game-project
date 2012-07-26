@@ -14,6 +14,7 @@ import reactive.EventStream
 import reactive.Observing
 import reactive.Signal
 import reactive.Timer
+import reactive.Val
 import reactive.Var
 
 import scala.util.Random
@@ -26,17 +27,19 @@ import scala.util.Random
 class SimonSaysActivity extends Activity with TypedActivity with Observing {
   val handler = new Handler()
   val score: Var[Int] = Var(1)
-  val expected: BufferSignal[Int] = BufferSignal(1, 2, 3, 4)
-  val actual: BufferSignal[Int] = BufferSignal[Int]()
-  val displayIndex: Var[Int] = Var[Int](0)
-  val btn1Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 1)
-  val btn2Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 2)
-  val btn3Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 3)
-  val btn4Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 4)
+  val expected: BufferSignal[Int] = BufferSignal(1)
+  val actual: BufferSignal[Int] = BufferSignal()
+  val displayIndex: Var[Int] = Var(0)
+  val btn1Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 1).distinct
+  val btn2Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 2).distinct
+  val btn3Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 3).distinct
+  val btn4Light: Signal[Boolean] = displayIndex.map(expected.value.apply(_) == 4).distinct
   val interactive: Var[Boolean] = Var(false)
   val timer: Timer = new Timer(0L, 2000L)
-  val displayUpdate = interactive flatMap {
+  val timerOff: EventSource[Long] = new EventSource[Long]() { }
+  val displayUpdate: EventStream[Long] = interactive.flatMap {
     case false => timer
+    case true => timerOff
   }
   val gameEnd: EventStream[Boolean] = actual.change.collect {
     case current if expected.value equals current => true
@@ -46,33 +49,40 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
   override def onCreate(bundle: Bundle) {
     super.onCreate(bundle)
     setContentView(R.layout.simonsays)
+    setButtonStatus(false)
 
-    findViewById(R.id.button1).setBackgroundColor(android.graphics.Color.RED)
-    findViewById(R.id.button2).setBackgroundColor(android.graphics.Color.BLUE)
-    findViewById(R.id.button3).setBackgroundColor(android.graphics.Color.GREEN)
-    findViewById(R.id.button4).setBackgroundColor(android.graphics.Color.YELLOW)
-
-    // Bad design
-    interactive.change.map {
-      case false => displayIndex.value = 0
+    // Bad design - this should actually be done via functional mapping,
+    // not with an imperative foreach.
+    interactive.change.foreach {
+      case false => {
+        setButtonStatus(false)
+        displayIndex.update(0)
+      }
+      case true => {
+        setButtonStatus(true)
+        lightButton(R.id.button1, Color.RED)
+        lightButton(R.id.button2, Color.BLUE)
+        lightButton(R.id.button3, Color.GREEN)
+        lightButton(R.id.button4, Color.YELLOW)
+      }
     }
 
-    gameEnd foreach {
+    gameEnd.foreach {
       case true => {
         toast("Victory!")
         // Restart game
         score.value += 1
         expected.value += score.value
         actual.update(Seq())
-        interactive.value = false
+        interactive.update(false)
       }
       case false => {
-        setButtonStatus(false) 
+        setButtonStatus(false)
         toast("You Lose :D")
       }
     }
 
-    btn1Light foreach { lit => 
+    btn1Light.foreach { lit =>
       handle {
         lit match {
           case true => lightButton(R.id.button1, Color.WHITE)
@@ -81,41 +91,40 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
       }
     }
 
-    btn2Light foreach { lit =>
+    btn2Light.foreach { lit =>
       handle {
         lit match {
-          case true => lightButton(R.id.button1, Color.WHITE)
-          case false => lightButton(R.id.button1, Color.BLUE)
+          case true => lightButton(R.id.button2, Color.WHITE)
+          case false => lightButton(R.id.button2, Color.BLUE)
         }
       }
     }
 
-
-    btn3Light foreach { lit =>
+    btn3Light.foreach { lit =>
       handle {
         lit match {
-          case true => lightButton(R.id.button1, Color.WHITE)
-          case false => lightButton(R.id.button1, Color.GREEN)
+          case true => lightButton(R.id.button3, Color.WHITE)
+          case false => lightButton(R.id.button3, Color.GREEN)
         }
       }
     }
 
-
-    btn4Light foreach { lit =>
+    btn4Light.foreach { lit =>
       handle {
         lit match {
-          case true => lightButton(R.id.button1, Color.WHITE)
-          case false => lightButton(R.id.button1, Color.YELLOW)
+          case true => lightButton(R.id.button4, Color.WHITE)
+          case false => lightButton(R.id.button4, Color.YELLOW)
         }
       }
     }
 
     displayUpdate.foreach(
       time => handle {
-        if (score.now == displayIndex.now)
-          interactive.value = false
-        else 
+        if (score.now == displayIndex.now + 1) {
+          interactive.update(true)
+        } else {
           displayIndex.value += 1
+        }
       }
     )
   }
