@@ -1,6 +1,7 @@
 package com.goldblastgames.simonsays
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
@@ -11,8 +12,11 @@ import reactive.BufferSignal
 import reactive.EventSource
 import reactive.EventStream
 import reactive.Observing
+import reactive.Signal
 import reactive.Timer
-//import reactive.Var
+import reactive.Var
+
+import scala.util.Random
 
 /**
  * Main activity demonstrating the usage of Android, Scala, and Reactive in one project.
@@ -21,9 +25,19 @@ import reactive.Timer
  */
 class SimonSaysActivity extends Activity with TypedActivity with Observing {
   val handler = new Handler()
-//  val score: Var[Int] = Var(1)
+  val score: Var[Int] = Var(1)
   val expected: BufferSignal[Int] = BufferSignal(1, 2, 3, 4)
   val actual: BufferSignal[Int] = BufferSignal[Int]()
+  val displayIndex: Var[Int] = Var[Int](0)
+  val btn1Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 1)
+  val btn2Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 2)
+  val btn3Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 3)
+  val btn4Light: Signal[Boolean] = displayIndex.map(expected.value(_) == 4)
+  val interactive: Var[Boolean] = Var(false)
+  val timer: Timer = new Timer(0L, 2000L)
+  val displayUpdate = interactive flatMap {
+    case false => timer
+  }
   val gameEnd: EventStream[Boolean] = actual.change.collect {
     case current if expected.value equals current => true
     case current if !(expected.value startsWith current) => false
@@ -38,20 +52,80 @@ class SimonSaysActivity extends Activity with TypedActivity with Observing {
     findViewById(R.id.button3).setBackgroundColor(android.graphics.Color.GREEN)
     findViewById(R.id.button4).setBackgroundColor(android.graphics.Color.YELLOW)
 
-    gameEnd foreach {
-      case true => toast("Victory!")
-      case false => toast("You Lose :(")
+    // Bad design
+    interactive.change.map {
+      case false => displayIndex.value = 0
     }
-    gameEnd foreach { _ => setButtonStatus(false) }
 
-//    val interval = 5000L
-//    val timer = new Timer(0L, interval, _ >= expected.value.size * interval)
-//    timer.foreach(_ => handle {
-//    timer.foreach(time => handle { toast("Hello from a timer") })
+    gameEnd foreach {
+      case true => {
+        toast("Victory!")
+        // Restart game
+        score.value += 1
+        expected.value += score.value
+        actual.update(Seq())
+        interactive.value = false
+      }
+      case false => {
+        setButtonStatus(false) 
+        toast("You Lose :D")
+      }
+    }
+
+    btn1Light foreach { lit => 
+      handle {
+        lit match {
+          case true => lightButton(R.id.button1, Color.WHITE)
+          case false => lightButton(R.id.button1, Color.RED)
+        }
+      }
+    }
+
+    btn2Light foreach { lit =>
+      handle {
+        lit match {
+          case true => lightButton(R.id.button1, Color.WHITE)
+          case false => lightButton(R.id.button1, Color.BLUE)
+        }
+      }
+    }
+
+
+    btn3Light foreach { lit =>
+      handle {
+        lit match {
+          case true => lightButton(R.id.button1, Color.WHITE)
+          case false => lightButton(R.id.button1, Color.GREEN)
+        }
+      }
+    }
+
+
+    btn4Light foreach { lit =>
+      handle {
+        lit match {
+          case true => lightButton(R.id.button1, Color.WHITE)
+          case false => lightButton(R.id.button1, Color.YELLOW)
+        }
+      }
+    }
+
+    displayUpdate.foreach(
+      time => handle {
+        if (score.now == displayIndex.now)
+          interactive.value = false
+        else 
+          displayIndex.value += 1
+      }
+    )
   }
 
   def handle(fn: => Unit) {
     handler.post(new RunnableFn(fn))
+  }
+
+  def lightButton(id: Int, color: Int) {
+    findViewById(id).setBackgroundColor(color)
   }
 
   /**
